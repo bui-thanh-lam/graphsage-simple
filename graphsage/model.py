@@ -95,7 +95,7 @@ def run_cora():
         optimizer.zero_grad()
         loss = graphsage.loss(batch_nodes, 
                 Variable(torch.LongTensor(labels[np.array(batch_nodes)])))
-        loss.backward()float
+        loss.backward()
         optimizer.step()
         end_time = time.time()
         times.append(end_time-start_time)
