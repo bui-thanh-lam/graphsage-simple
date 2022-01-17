@@ -1,8 +1,6 @@
 import torch
 import torch.nn as nn
 from torch.nn import init
-from torch.autograd import Variable
-
 import numpy as np
 import time
 import random
@@ -62,25 +60,26 @@ def load_cora():
             adj_lists[paper2].add(paper1)
     return feat_data, labels, adj_lists
 
-def run_cora():
+def run_cora(cuda=True):
+    DEVICE = 'cuda' if cuda else 'cpu'
     np.random.seed(1)
     random.seed(1)
     num_nodes = 2708
     feat_data, labels, adj_lists = load_cora()
     features = nn.Embedding(2708, 1433)
     features.weight = nn.Parameter(torch.FloatTensor(feat_data), requires_grad=False)
-   # features.cuda()
+    features.to(DEVICE)
 
-    agg1 = MeanAggregator(features, cuda=True)
-    enc1 = Encoder(features, 1433, 128, adj_lists, agg1, gcn=True, cuda=False)
-    agg2 = MeanAggregator(lambda nodes : enc1(nodes).t(), cuda=False)
+    agg1 = MeanAggregator(features, cuda)
+    enc1 = Encoder(features, 1433, 128, adj_lists, agg1, gcn=True, cuda=cuda)
+    agg2 = MeanAggregator(lambda nodes : enc1(nodes).t(), cuda)
     enc2 = Encoder(lambda nodes : enc1(nodes).t(), enc1.embed_dim, 128, adj_lists, agg2,
-            base_model=enc1, gcn=True, cuda=False)
+            base_model=enc1, gcn=True, cuda=cuda)
     enc1.num_samples = 5
     enc2.num_samples = 5
 
     graphsage = SupervisedGraphSage(7, enc2)
-#    graphsage.cuda()
+    graphsage.to(DEVICE)
     rand_indices = np.random.permutation(num_nodes)
     test = rand_indices[:1000]
     val = rand_indices[1000:1500]
@@ -93,8 +92,7 @@ def run_cora():
         random.shuffle(train)
         start_time = time.time()
         optimizer.zero_grad()
-        loss = graphsage.loss(batch_nodes, 
-                Variable(torch.LongTensor(labels[np.array(batch_nodes)])))
+        loss = graphsage.loss(batch_nodes, torch.LongTensor(labels[np.array(batch_nodes)]).to(DEVICE))
         loss.backward()
         optimizer.step()
         end_time = time.time()
@@ -102,6 +100,7 @@ def run_cora():
         print(batch, loss.item())
 
     val_output = graphsage.forward(val) 
+    if cuda: val_output = val_output.cpu()
     print("Validation F1:", f1_score(labels[val], val_output.data.numpy().argmax(axis=1), average="micro"))
     print("Average batch time:", np.mean(times))
 
@@ -141,7 +140,7 @@ def run_pubmed():
     feat_data, labels, adj_lists = load_pubmed()
     features = nn.Embedding(19717, 500)
     features.weight = nn.Parameter(torch.FloatTensor(feat_data), requires_grad=False)
-   # features.cuda()
+    # features.cuda()
 
     agg1 = MeanAggregator(features, cuda=True)
     enc1 = Encoder(features, 500, 128, adj_lists, agg1, gcn=True, cuda=False)
@@ -152,7 +151,7 @@ def run_pubmed():
     enc2.num_samples = 25
 
     graphsage = SupervisedGraphSage(3, enc2)
-#    graphsage.cuda()
+    # graphsage.cuda()
     rand_indices = np.random.permutation(num_nodes)
     test = rand_indices[:1000]
     val = rand_indices[1000:1500]
