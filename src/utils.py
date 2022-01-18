@@ -17,7 +17,7 @@ def change_lr(optimizer, new_lr):
     for param_group in optimizer.param_groups:
         param_group['lr'] = new_lr
 
-def load_cora(embedding_path, graph_path, device="cpu", return_shape=True):
+def load_cora(embedding_path="data/cora/vnd_sample.content", graph_path="data/cora/vnd_sample.cites", device="cpu", return_shape=True):
     """
     Load data in CORA format.
 
@@ -30,19 +30,20 @@ def load_cora(embedding_path, graph_path, device="cpu", return_shape=True):
         features    (nn.Embedding [V * M]): node embedding
         labels      (np array shape [V * 1]): node label
         adj_lists   (set shape [V * ...]): adjacency list represent the graph
+        shape       (tuple size 2): n_nodes & n_features
     """
     _features = list()
     labels = list()
     node_map = dict()
-    label_map = dict()
+    label_map = {"bad": 1, "good": 0}
     with open(embedding_path) as fp:
         for i, line in enumerate(fp):
             info = line.strip().split()
-            _features[i] = [float(e) for e in info[1:-1]]
+            _features.append([float(e) for e in info[1:-1]])
             node_map[info[0]] = i
             if not info[-1] in label_map:
                 label_map[info[-1]] = len(label_map)
-            labels[i] = label_map[info[-1]]
+            labels.append(label_map[info[-1]])
     _features = np.asarray(_features, dtype=np.float32)
     n_nodes, n_features = _features.shape
     features = torch.nn.Embedding(n_nodes, n_features)
@@ -50,14 +51,17 @@ def load_cora(embedding_path, graph_path, device="cpu", return_shape=True):
     if device == "cuda": features = features.cuda()
     labels = np.asarray(labels, dtype=np.float32)
 
-    adj_lists = set()
+    adj_lists = list()
     with open(graph_path) as fp:
         for i,line in enumerate(fp):
             info = line.strip().split()
-            paper1 = node_map[info[0]]
-            paper2 = node_map[info[1]]
-            adj_lists[paper1].add(paper2)
-            adj_lists[paper2].add(paper1)
+            try:
+                node_1 = node_map[info[0]]
+                node_2 = node_map[info[1]]
+                adj_lists[node_1].append(node_2)
+                adj_lists[node_2].append(node_1)
+            except:
+                pass
     if return_shape: return features, labels, adj_lists, (n_nodes, n_features)
     else: return features, labels, adj_lists
     
