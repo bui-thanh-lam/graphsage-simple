@@ -1,3 +1,0 @@
-torch==1.10.0
-sklearn==1.0.2
-numpy==1.19.5
