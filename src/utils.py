@@ -45,7 +45,7 @@ def load_cora(embedding_path, graph_path, device="cpu", return_shape=True):
             labels[i] = label_map[info[-1]]
     _features = np.asarray(_features, dtype=np.float32)
     n_nodes, n_features = _features.shape
-    features = torch.nn.Embedding(w, h)
+    features = torch.nn.Embedding(n_nodes, n_features)
     features.weight = torch.nn.Parameter(torch.FloatTensor(_features), requires_grad=False)
     if device == "cuda": features = features.cuda()
     labels = np.asarray(labels, dtype=np.float32)

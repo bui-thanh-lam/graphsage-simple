@@ -4,7 +4,6 @@
 *.png
 *.pdf
 tmp/
-*.txt
 *swp*
 *.sw?
 gcn_back
@@ -107,4 +106,4 @@ ENV/
 
 *.pickle
 *.pkl
-
+convert_to_cora.py
