@@ -51,15 +51,15 @@ def load_cora(embedding_path="data/cora/vnd_sample.content", graph_path="data/co
     if device == "cuda": features = features.cuda()
     labels = np.asarray(labels, dtype=np.float32)
 
-    adj_lists = list()
+    adj_lists = [set() for _ in range(n_nodes)]
     with open(graph_path) as fp:
         for i,line in enumerate(fp):
             info = line.strip().split()
             try:
                 node_1 = node_map[info[0]]
                 node_2 = node_map[info[1]]
-                adj_lists[node_1].append(node_2)
-                adj_lists[node_2].append(node_1)
+                adj_lists[node_1].add(node_2)
+                adj_lists[node_2].add(node_1)
             except:
                 pass
     if return_shape: return features, labels, adj_lists, (n_nodes, n_features)

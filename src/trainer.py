@@ -54,12 +54,12 @@ class GCN_creditTrainer(Trainer):
 
     def update(self, batch):
         inputs, labels = batch
+        labels = labels.long()
         if self.args['cuda']:
             #model params, loss, inputs, labels must be on the same device
-            inputs = inputs.cuda()
             labels = labels.cuda()
 
-        self.optimizer.train()
+        self.model.train()
         self.optimizer.zero_grad()
         outputs = self.model(inputs)
         loss = self.criterion(outputs, labels)
@@ -74,7 +74,7 @@ class GCN_creditTrainer(Trainer):
             if self.args['cuda']:
                 inputs = inputs.cuda()
 
-            self.optimizer.eval()
+            self.model.eval()
             outputs = self.model(inputs)
             return outputs
         else:
