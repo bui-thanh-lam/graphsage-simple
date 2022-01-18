@@ -2,7 +2,7 @@ from argparse import ArgumentParser
 import torch
 
 from src.model import GCN_creditModel
-from src.datamodule import SupervisedGraphSage, collate_fn
+from src.datamodule import SupervisedGraphSage
 from src.trainer import GCN_creditTrainer
 
 from tqdm import tqdm
@@ -58,7 +58,7 @@ def main():
         train_loss = 0
         start_time = time()
         for batch_idx, batch in tqdm(enumerate(train_dataloader)):
-            loss = trainer.predict(batch)
+            loss = trainer.update(batch)
             train_loss += loss
         avg_loss = train_loss / len(train_dataset) * args['train_batch_size']
         duration = time() - start_time

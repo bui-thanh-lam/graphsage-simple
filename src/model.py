@@ -2,9 +2,8 @@ import torch
 import torch.nn as nn
 from torch.nn import init
 import torch.nn.functional as F
-import src.utils
-
 import random
+from src import utils
 
 class MeanAggregator(nn.Module):
 
@@ -88,7 +87,7 @@ class SupervisedGraphSage(nn.Module):
         cuda = self.args['cuda']
         num_sample = self.args['num_sample']
         num_classes = self.args['num_classes']
-        adj_lists = get_adj_lists(self.args['dataset_path'])
+        adj_lists = utils.get_adj_lists(self.args['dataset_path'])
 
         #aggregators
         self.aggregators = nn.ModuleList([MeanAggregator(gcn=True, cuda=cuda, num_sample=num_sample, adj_lists=self.adj_lists) for _ in range(num_layers)])
