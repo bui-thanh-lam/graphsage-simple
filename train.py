@@ -23,7 +23,7 @@ parser.add_argument('--num_classes', type=int, default=2, help='number of user t
 
 #trainer parameters
 parser.add_argument('--cuda', type=bool, default=torch.cuda.is_available(), help='')
-parser.add_argument('--lr', type=float, default=1e-1, help='learning rate')
+parser.add_argument('--lr', type=float, default=1e-3, help='learning rate')
 parser.add_argument('--batch_size', type=int, default=128, help='batch size')
 parser.add_argument('--num_epochs', type=int, default=100, help='number of epochs')
 parser.add_argument('--optim', type=str, default='adam', help='optimizer option')
@@ -70,7 +70,23 @@ def main():
         duration = time() - start_time
         print(log.format(epoch, avg_loss, duration))
     trainer.save(args['save_path'])
+    
     #evaluate
+    print('start evaluate...')
+    probs = []
+    outputs = []
+    labels = []
+    for batch in tqdm(test_dataloader):
+        batch_probs, batch_outputs, batch_labels = trainer.predict(batch)
+        batch_probs = batch_probs.cpu().detach().numpy().tolist()
+        batch_outputs = batch_outputs.cpu().detach().numpy().tolist()
+        batch_labels = batch_labels.cpu().detach().numpy().tolist()
+        
+        probs.extend(batch_probs)
+        outputs.extend(batch_outputs)
+        labels.extend(batch_labels)
+    
+    #implement f1, acc, auc metric
 
 if __name__ == '__main__':
     main()

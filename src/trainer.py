@@ -75,8 +75,11 @@ class GCN_creditTrainer(Trainer):
                 inputs = inputs.cuda()
 
             self.model.eval()
-            outputs = self.model(inputs)
-            return outputs
+            probs = self.model(inputs)
+            probs = probs[:, 0]
+            threshold = 0.5
+            outputs = [(lambda x: 1 if x > threshold else 0)(x) for x in probs]
+            return probs, outputs
         else:
             inputs, labels = batch
             if self.args['cuda']:
@@ -85,8 +88,9 @@ class GCN_creditTrainer(Trainer):
                 labels = labels.cuda()
 
             self.optimizer.eval()
-            outputs = self.model(inputs)
-            loss = self.criterion(outputs, labels)
-
-            return loss.item()
+            probs = self.model(inputs)
+            probs = probs[:, 0]
+            threshold = 0.5
+            outputs = [(lambda x: 1 if x > threshold else 0)(x) for x in probs] 
+            return probs, outputs, labels
 

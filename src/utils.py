@@ -17,7 +17,7 @@ def change_lr(optimizer, new_lr):
     for param_group in optimizer.param_groups:
         param_group['lr'] = new_lr
 
-def load_cora(embedding_path="data/cora/vnd_sample.content", graph_path="data/cora/vnd_sample.cites", device="cpu", return_shape=True):
+def load_cora(embedding_path="data/cora/preprocess_train_data.content", graph_path="data/cora/vnd_sample.cites", device="cpu", return_shape=True):
     """
     Load data in CORA format.
 
