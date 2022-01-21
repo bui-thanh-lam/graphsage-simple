@@ -30,7 +30,7 @@ parser.add_argument('--batch_size', type=int, default=64, help='batch size')
 parser.add_argument('--num_epochs', type=int, default=100, help='number of epochs')
 parser.add_argument('--optim', type=str, default='adam', help='optimizer option')
 parser.add_argument('--load_path', type=str, default=None, help='load model path')
-parser.add_argument('--save_path', type=str, required=True, help='save model path')
+parser.add_argument('--save_path', type=str, default=None, help='save model path')
 
 
 args = parser.parse_args()
@@ -77,14 +77,15 @@ def main():
         avg_loss = train_loss / len(train_dataset) * args['batch_size']
         duration = time() - start_time
         print(log.format(epoch, avg_loss, duration))
-    trainer.save(args['save_path'])
+    if args['save_path'] is not None:
+        trainer.save(args['save_path'])
     
     #evaluate
     print('start evaluate...')
     probs = []
     outputs = []
     labels = []
-    for batch in tqdm(train_dataloader):
+    for batch in tqdm(test_dataloader):
         batch_probs, batch_outputs, batch_labels = trainer.predict(batch, infer=False)
         batch_probs = batch_probs.cpu().detach().numpy().tolist()
         batch_labels = batch_labels.cpu().detach().numpy().tolist()

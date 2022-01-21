@@ -24,7 +24,7 @@ class Trainer(object):
         except BaseException:
             print("Cannot load model from {}".format(filename))
             exit()
-        self.model.load_state_dict(checkpoint['model'])
+        self.model.load_state_dict(checkpoint['model'], strict=False)
         self.args = checkpoint['config']
 
     def save(self, filename):

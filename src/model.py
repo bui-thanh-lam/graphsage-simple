@@ -37,14 +37,14 @@ class MeanAggregator(nn.Module):
         column_indices = [unique_nodes[n] for samp_neigh in samp_neighs for n in samp_neigh]
         row_indices = [i for i in range(len(samp_neighs)) for j in range(len(samp_neighs[i]))]
         mask[row_indices, column_indices] = 1
-        # if self.cuda:
-        #     mask = mask.cuda()
+        if self.cuda:
+            mask = mask.cuda()
         num_neigh = mask.sum(1, keepdim=True)
         mask = mask.div(num_neigh)
-        # if self.cuda:
-        #     embed_matrix = self.features(torch.LongTensor(unique_nodes_list).cuda())
-        # else:
-        embed_matrix = self.features(torch.LongTensor(unique_nodes_list))
+        if self.cuda:
+            embed_matrix = self.features(torch.LongTensor(unique_nodes_list).cuda())
+        else:
+            embed_matrix = self.features(torch.LongTensor(unique_nodes_list))
         to_feats = mask.mm(embed_matrix)
         return to_feats
 
@@ -66,10 +66,10 @@ class Encoder(nn.Module):
     def forward(self, embeds, nodes):
 
         if not self.gcn:
-            # if self.cuda:
-            #     self_feats = self.features(torch.LongTensor(nodes).cuda())
-            # else:
-            self_feats = self.features(torch.LongTensor(nodes))
+            if self.cuda:
+                self_feats = self.features(torch.LongTensor(nodes).cuda())
+            else:
+                self_feats = self.features(torch.LongTensor(nodes))
             combined = torch.cat([self_feats, embeds], dim=1)
         else:
             combined = embeds
@@ -112,4 +112,4 @@ class SupervisedGraphSage(nn.Module):
             embeds = self.fcs[layer](embeds, nodes)
 
         scores = self.weight.mm(embeds)
-        return F.sigmoid(scores.t()).squeeze()
+        return torch.sigmoid(scores.t()).squeeze()
