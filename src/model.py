@@ -104,7 +104,7 @@ class SupervisedGraphSage(nn.Module):
         init.xavier_uniform_(self.weight)
 
     def forward(self, nodes):
-        nodes = nodes.numpy().tolist()
+        #nodes = nodes.numpy().tolist()
         embeds = self.aggregators[0](self.features, nodes)
         embeds = self.fcs[0](embeds, nodes)
         for layer in range(1, self.args['num_layers'] - 1):
@@ -112,4 +112,4 @@ class SupervisedGraphSage(nn.Module):
             embeds = self.fcs[layer](embeds, nodes)
 
         scores = self.weight.mm(embeds)
-        return scores.t()
+        return F.sigmoid(scores.t()).squeeze()

@@ -44,7 +44,7 @@ class GCN_creditTrainer(Trainer):
         self.model = model
         if self.args['load_path'] is not None:
             self.load(args['load_path'])
-        self.criterion = nn.CrossEntropyLoss()
+        self.criterion = nn.BCELoss()
         self.parameters = [p for p in self.model.parameters() if p.requires_grad]
         if self.args['cuda']:
             #model params, loss, inputs, labels must be on the same device
@@ -54,7 +54,7 @@ class GCN_creditTrainer(Trainer):
 
     def update(self, batch):
         inputs, labels = batch
-        labels = labels.long()
+        labels = labels.float()
         if self.args['cuda']:
             #model params, loss, inputs, labels must be on the same device
             labels = labels.cuda()
@@ -87,9 +87,8 @@ class GCN_creditTrainer(Trainer):
                 inputs = inputs.cuda()
                 labels = labels.cuda()
 
-            self.optimizer.eval()
+            self.model.eval()
             probs = self.model(inputs)
-            probs = probs[:, 0]
             threshold = 0.5
             outputs = [(lambda x: 1 if x > threshold else 0)(x) for x in probs] 
             return probs, outputs, labels
